@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,6 +17,7 @@ import java.util.List;
 import uk.co.willanthony.quotationapp.Quote;
 import uk.co.willanthony.quotationapp.R;
 import uk.co.willanthony.quotationapp.activities.QuoteActivity;
+import uk.co.willanthony.quotationapp.activities.QuotePDFActivity;
 import uk.co.willanthony.quotationapp.database.QuoteDatabase;
 
 public class MainMenuRVAdapter extends RecyclerView.Adapter<MainMenuRVAdapter.QuoteItemViewHolder> implements DeletableAdapter {
@@ -73,22 +75,9 @@ public class MainMenuRVAdapter extends RecyclerView.Adapter<MainMenuRVAdapter.Qu
         quoteDatabase.deleteQuote(deletedQuote.getID());
     }
 
-//    private void showUndoSnackbar() {
-//        View view = findViewById(R.id.coordinator_layout);
-//        Snackbar snackbar = Snackbar.make(view, R.string.snack_bar_text,
-//                Snackbar.LENGTH_LONG);
-//        snackbar.setAction(R.string.snack_bar_undo, v -> undoDelete());
-//        snackbar.show();
-//    }
-//
-//    private void undoDelete() {
-//        mListItems.add(mRecentlyDeletedItemPosition,
-//                mRecentlyDeletedItem);
-//        notifyItemInserted(mRecentlyDeletedItemPosition);
-//    }
-
     public class QuoteItemViewHolder extends RecyclerView.ViewHolder{
         TextView quoteID, quoteTitle, quoteDate, quoteTime;
+        Button documentButton, editButton;
 
         public QuoteItemViewHolder(@NonNull final View itemView) {
             super(itemView);
@@ -96,8 +85,19 @@ public class MainMenuRVAdapter extends RecyclerView.Adapter<MainMenuRVAdapter.Qu
             this.quoteTitle = itemView.findViewById(R.id.quoteTitle);
             this.quoteDate = itemView.findViewById(R.id.quoteDate);
             this.quoteTime = itemView.findViewById(R.id.quoteTime);
+            this.documentButton = itemView.findViewById(R.id.documentButton);
 
-            itemView.setOnClickListener(new View.OnClickListener() {
+            this.documentButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent i = new Intent(v.getContext(), QuotePDFActivity.class);
+                    i.putExtra("quoteID",quotes.get(getAdapterPosition()).getID());
+                    v.getContext().startActivity(i);
+                }
+            });
+
+            this.editButton = itemView.findViewById(R.id.penButton);
+            this.editButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent i = new Intent(v.getContext(), QuoteActivity.class);

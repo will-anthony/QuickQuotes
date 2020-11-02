@@ -1,4 +1,4 @@
-package uk.co.willanthony.quotationapp.recyclerview;
+package uk.co.willanthony.quotationapp.recyclerview.dialog_rv.item_data;
 
 public class ExtrasAddedItemData {
 

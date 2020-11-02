@@ -3,7 +3,6 @@ package uk.co.willanthony.quotationapp.activities;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -18,30 +18,38 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import uk.co.willanthony.quotationapp.MachineryDialog;
 import uk.co.willanthony.quotationapp.Job;
+import uk.co.willanthony.quotationapp.dialogs.ExtrasDialog;
 import uk.co.willanthony.quotationapp.R;
 import uk.co.willanthony.quotationapp.database.JobDatabase;
 import uk.co.willanthony.quotationapp.recyclerview.ButtonItemData;
-import uk.co.willanthony.quotationapp.recyclerview.ExtrasAddedItemData;
-import uk.co.willanthony.quotationapp.recyclerview.MachineryAddedRVAdapter;
+import uk.co.willanthony.quotationapp.recyclerview.DeletableAdapter;
+import uk.co.willanthony.quotationapp.recyclerview.dialog_rv.ExtrasAddedRVAdapter;
+import uk.co.willanthony.quotationapp.recyclerview.dialog_rv.ExtrasToAddRVAdapter;
+import uk.co.willanthony.quotationapp.recyclerview.dialog_rv.item_data.ExtrasAddedItemData;
+import uk.co.willanthony.quotationapp.recyclerview.JobActExtrasRVAdapter;
 import uk.co.willanthony.quotationapp.recyclerview.NumericRVAdapter;
+import uk.co.willanthony.quotationapp.recyclerview.dialog_rv.item_data.ExtrasItemData;
+import uk.co.willanthony.quotationapp.util.RVButtonData;
+import uk.co.willanthony.quotationapp.util.SwipeToDeleteCallback;
 
 public class AddJobActivity extends AppCompatActivity implements NumericRVAdapter.RVButtonListener {
 
-    private static final String TAG = "AddJobActivity";
-    //    private Toolbar toolbar;
     private EditText jobTitle;
     private EditText jobDescription;
     private Button saveButton;
-    private String textColor;
     private Button machineryButton, materialsButton;
-    private List<ExtrasAddedItemData> itemDataList;
+    private List<ExtrasAddedItemData> machineryDataList;
+    private List<ExtrasAddedItemData> materialsDataList;
+    private ExtrasDialog machineryDialog, materialsDialog;
+    private JobActExtrasRVAdapter machineryRVAdapter, materialsRVAdapter;
+    private RVButtonData buttonData;
+    private long jobID;
+    private Job job;
+    private long quoteID;
 
-
-    private ButtonItemData[] workersItemData, hoursItemData, frequencyItemData, percentageItemData;
-    private RecyclerView workersRecyclerView, hoursRecyclerView, frequencyRecyclerView, percentageRecyclerView;
-    private RecyclerView extrasRV;
+    private RecyclerView workersRV, hoursRV, frequencyRV, percentageRV;
+    private RecyclerView machineryRV, materialsRV;
 
     private float noOfWorkers, noOfHours, machineryCost, materialsCost, frequency, percentage;
     private float totalCost, costPlusVAT;
@@ -51,67 +59,206 @@ public class AddJobActivity extends AppCompatActivity implements NumericRVAdapte
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_job_test);
+        this.machineryDataList = new ArrayList<>();
+        this.materialsDataList = new ArrayList<>();
+        this.df = new DecimalFormat("0.00");
+        this.buttonData = new RVButtonData("#F0F5FB");
 
-        this.textColor = "#F0F5FB";
-        jobDescription = findViewById(R.id.jobDescriptionText);
-        jobTitle = findViewById(R.id.jobTitle);
-        extrasRV = findViewById(R.id.extrasRV);
-        itemDataList = new ArrayList<>();
-        extrasRV.setAdapter(new MachineryAddedRVAdapter(itemDataList, this));
+        initViews();
+        setUpJobDataBase();
+        setUpMachineryDialog();
+        setUpMaterialsDialog();
+        setUpSaveButton();
+        setUpMachineryButton();
+        setUpMaterialsButton();
+    }
 
-        df = new DecimalFormat("0.00");
+    private void setUpJobDataBase() {
+        Intent intent = getIntent();
+        long checkJobID = intent.getLongExtra("jobID", -1);
+        if (checkJobID == -1) {
+            this.jobID = saveJobToDataBase();
+            retrieveJob(jobID);
+            initSumValues();
+        } else {
+            this.jobID = checkJobID;
+            retrieveJob(jobID);
+            setJobState();
+        }
+    }
 
-        initSumValues();
+    private long saveJobToDataBase() {
+        this.quoteID = getIntent().getLongExtra("quoteID", 0);
+        Job job = new Job(quoteID, jobTitle.getText().toString(), jobDescription.getText().toString(),
+                String.valueOf(AddJobActivity.this.totalCost), String.valueOf(AddJobActivity.this.costPlusVAT), getNumericRVBooleans(workersRV),
+                getNumericRVBooleans(hoursRV), getNumericRVBooleans(frequencyRV), getNumericRVBooleans(percentageRV),
+                getExtrasString(machineryRV), getExtrasString(materialsRV));
 
-        this.workersRecyclerView = findViewById(R.id.worker_recyclerview);
-        this.workersItemData = setWorkersItemData();
-        setUpHorizontalRV(this.workersRecyclerView, this.workersItemData);
+        JobDatabase jobDatabase = new JobDatabase(AddJobActivity.this);
+        return jobDatabase.addJob(job);
+    }
 
-        this.hoursRecyclerView = findViewById(R.id.hours_recyclerview);
-        this.hoursItemData = setHoursItemData();
-        setUpHorizontalRV(this.hoursRecyclerView, this.hoursItemData);
+    private String getNumericRVBooleans(RecyclerView recyclerView) {
+        NumericRVAdapter numericRVAdapter = (NumericRVAdapter) recyclerView.getAdapter();
+        return numericRVAdapter.getBooleanString();
+    }
 
-        this.frequencyRecyclerView = findViewById(R.id.frequency_recyclerview);
-        this.frequencyItemData = setFrequencyItemData();
-        setUpHorizontalRV(this.frequencyRecyclerView, this.frequencyItemData);
+    private String getExtrasString(RecyclerView recyclerView) {
+        JobActExtrasRVAdapter jobActExtrasRVAdapter = (JobActExtrasRVAdapter) recyclerView.getAdapter();
+        return jobActExtrasRVAdapter.getExtrasString();
+    }
 
-        this.percentageRecyclerView = findViewById(R.id.percentage_recyclerview);
-        this.percentageItemData = setPercentageItemData();
-        setUpHorizontalRV(this.percentageRecyclerView, this.percentageItemData);
+    private void retrieveJob(long jobID) {
+        JobDatabase jobDatabase = new JobDatabase(this);
+        this.job = jobDatabase.getJob(jobID);
+        this.quoteID = this.job.getQuoteNumber();
 
-        this.saveButton = findViewById(R.id.saveButton);
-        saveButton.setOnClickListener(new View.OnClickListener() {
+        jobDatabase.close();
+    }
+
+    private void setJobState() {
+        this.jobTitle.setText(job.getTitle());
+        this.jobDescription.setText(job.getDescription());
+
+        loadSelectedButtons(job.getWorkersSelectedString(), workersRV);
+        loadSelectedButtons(job.getHoursSelectedString(), hoursRV);
+        loadSelectedButtons(job.getFrequencySelectedString(), frequencyRV);
+        loadSelectedButtons(job.getPercentageSelectedString(), percentageRV);
+
+        loadJobExtras(job.getMachinerySelectedString(), machineryRVAdapter);
+        loadJobExtras(job.getMaterialsSelectedString(), materialsRVAdapter);
+    }
+
+    private void loadSelectedButtons(String booleanString, RecyclerView recyclerView) {
+        if (booleanString != null) {
+            char[] chars = booleanString.toCharArray();
+            for (int i = 0; i < chars.length; i++) {
+                if (chars[i] == 't') {
+                    NumericRVAdapter adapter = (NumericRVAdapter) recyclerView.getAdapter();
+                    ButtonItemData buttonItemData = adapter.getItemDataArray()[i];
+
+                    buttonItemData.setSelected(true);
+                    adapter.setLastButtonSelected(buttonItemData);
+                    rVButtonClick(i, buttonItemData.getTag());
+                }
+            }
+        }
+    }
+
+    private void loadJobExtras(String extrasString, JobActExtrasRVAdapter adapter) {
+        if (extrasString != null) {
+            String[] splitStrings = extrasString.split("/");
+            for (String splitString : splitStrings) {
+                String[] nameAndNumber = splitString.split("~");
+                checkExtrasData(nameAndNumber, buttonData.getMachineryItemData(), adapter);
+            }
+        }
+    }
+
+    private void checkExtrasData(String[] nameAndNumber, List<ExtrasItemData> extrasDataList, JobActExtrasRVAdapter adapter) {
+        String name = nameAndNumber[0];
+        String number = nameAndNumber[1];
+        for (int index = 0; index < extrasDataList.size(); index++) {
+
+            ExtrasItemData extra = extrasDataList.get(index);
+            if (name.equals(extra.getName())) {
+                ExtrasAddedItemData extrasToAdd = new ExtrasAddedItemData(extra.getName(), extra.getPrice(), Integer.parseInt(number));
+                adapter.addExtras(extrasToAdd);
+                addMachineryCost();
+                addMaterialsCost();
+                displayTotal();
+            }
+        }
+    }
+
+    private void initViews() {
+        this.jobDescription = findViewById(R.id.jobDescriptionText);
+        this.jobTitle = findViewById(R.id.jobTitle);
+        this.machineryRV = findViewById(R.id.extrasAddedRV);
+        this.materialsRV = findViewById(R.id.materialsAddedRV);
+        setUpRecyclerViews();
+    }
+
+    private void setUpRecyclerViews() {
+        setUpMachineryRV();
+        setUpMaterialsRV();
+        setUpWorkersRV();
+        setUpHoursRV();
+        setUpFrequencyRV();
+        setUpPercentageRV();
+    }
+
+    private void setUpMachineryRV() {
+        this.machineryRVAdapter = new JobActExtrasRVAdapter(machineryDataList, this);
+        this.machineryRV.setAdapter(machineryRVAdapter);
+        this.machineryRV.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        attachSwipeToDel(machineryRVAdapter, machineryRV);
+    }
+
+    private void setUpMaterialsRV() {
+        this.materialsRVAdapter = new JobActExtrasRVAdapter(materialsDataList, this);
+        this.materialsRV.setAdapter(materialsRVAdapter);
+        this.materialsRV.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        attachSwipeToDel(materialsRVAdapter, materialsRV);
+    }
+
+    private void attachSwipeToDel(DeletableAdapter adapter, RecyclerView recyclerView) {
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeToDeleteCallback(adapter, this));
+        itemTouchHelper.attachToRecyclerView(recyclerView);
+    }
+
+
+    private void setUpMachineryDialog() {
+        this.machineryDialog = new ExtrasDialog(this, "extra machinery", buttonData.getMachineryItemData());
+        this.machineryDialog.setDialogResult(new ExtrasDialog.DialogResult() {
             @Override
-            public void onClick(View v) {
-                Job job = new Job(getIntent().getLongExtra("quoteID", 0), jobTitle.getText().toString(), jobDescription.getText().toString(),
-                        String.valueOf(AddJobActivity.this.totalCost), String.valueOf(AddJobActivity.this.costPlusVAT));
-
-                JobDatabase jobDatabase = new JobDatabase(AddJobActivity.this);
-                jobDatabase.addJob(job);
-                Toast.makeText(AddJobActivity.this, "Save button clicked", Toast.LENGTH_SHORT).show();
-                goToQuote();
+            public void finish(List<ExtrasAddedItemData> result) {
+                for (int index = 0; index < result.size(); index++) {
+                    machineryRVAdapter.addExtras(result.get(index));
+                }
+                addMachineryCost();
+                displayTotal();
             }
         });
+    }
 
-        this.machineryButton = findViewById(R.id.addMachineryButton);
-        this.machineryButton.setOnClickListener(new View.OnClickListener() {
+    private void setUpMaterialsDialog() {
+        this.materialsDialog = new ExtrasDialog(this, "extra materials", buttonData.getMaterialsItemData());
+        this.materialsDialog.setDialogResult(new ExtrasDialog.DialogResult() {
             @Override
-            public void onClick(View v) {
-                new MachineryDialog(AddJobActivity.this, "Extra Machinery", this).showPopUp();
+            public void finish(List<ExtrasAddedItemData> result) {
+                for (int index = 0; index < result.size(); index++) {
+                    materialsRVAdapter.addExtras(result.get(index));
+                }
+                addMaterialsCost();
+                displayTotal();
             }
         });
-        this.materialsButton = findViewById(R.id.addMaterialsButton);
+    }
 
+    private void setUpWorkersRV() {
+        this.workersRV = findViewById(R.id.worker_recyclerview);
+        setUpHorizontalRV(this.workersRV, this.buttonData.getWorkersItemData());
+    }
+
+    private void setUpHoursRV() {
+        this.hoursRV = findViewById(R.id.hours_recyclerview);
+        setUpHorizontalRV(this.hoursRV, this.buttonData.getHoursItemData());
+    }
+
+    private void setUpFrequencyRV() {
+        this.frequencyRV = findViewById(R.id.frequency_recyclerview);
+        setUpHorizontalRV(this.frequencyRV, this.buttonData.getFrequencyItemData());
+    }
+
+    private void setUpPercentageRV() {
+        this.percentageRV = findViewById(R.id.percentage_recyclerview);
+        setUpHorizontalRV(this.percentageRV, this.buttonData.getPercentageItemData());
     }
 
     private void goToQuote() {
-        // Gets quoteID, passed to this class inside the intent and returns it. QuoteActivity class
-        // then checks for -1. If true creates new DB entry, else edits existing entry
-        long quoteID = getIntent().getLongExtra("quoteID", -1);
-
         Intent intent = new Intent(this, QuoteActivity.class);
-        Log.d(TAG, "goToQuote: " + quoteID);
-        intent.putExtra("quoteID", quoteID);
+        intent.putExtra("quoteID", this.quoteID);
         startActivity(intent);
     }
 
@@ -124,6 +271,46 @@ public class AddJobActivity extends AppCompatActivity implements NumericRVAdapte
         this.percentage = 0f;
     }
 
+    private void setUpSaveButton() {
+        this.saveButton = findViewById(R.id.saveButton);
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                job = new Job(job.getID(), quoteID, jobTitle.getText().toString(), jobDescription.getText().toString(),
+                        String.valueOf(AddJobActivity.this.totalCost), String.valueOf(AddJobActivity.this.costPlusVAT),
+                        getNumericRVBooleans(workersRV), getNumericRVBooleans(hoursRV),
+                        getNumericRVBooleans(frequencyRV), getNumericRVBooleans(percentageRV),
+                        getExtrasString(machineryRV), getExtrasString(materialsRV));
+
+                JobDatabase jobDatabase = new JobDatabase(AddJobActivity.this);
+                jobDatabase.editJob(job);
+                goToQuote();
+            }
+        });
+    }
+
+    private void setUpMachineryButton() {
+        this.machineryButton = findViewById(R.id.addMachineryButton);
+        this.machineryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                machineryDialog.showPopUp();
+            }
+        });
+        displayTotal();
+    }
+
+    private void setUpMaterialsButton() {
+        this.materialsButton = findViewById(R.id.addMaterialsButton);
+        this.materialsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                materialsDialog.showPopUp();
+            }
+        });
+        displayTotal();
+    }
+
     private void setUpHorizontalRV(RecyclerView recyclerView, ButtonItemData[] itemDataArray) {
 
         NumericRVAdapter numericRVAdapter = new NumericRVAdapter(itemDataArray, this);
@@ -132,145 +319,68 @@ public class AddJobActivity extends AppCompatActivity implements NumericRVAdapte
 
     }
 
-    private ButtonItemData[] setWorkersItemData() {
-        return new ButtonItemData[]{
-                new ButtonItemData("1", textColor, 15, 1),
-                new ButtonItemData("2", textColor, 30, 1),
-                new ButtonItemData("3", textColor, 45, 1),
-                new ButtonItemData("4", textColor, 60, 1),
-                new ButtonItemData("5", textColor, 75, 1),
-                new ButtonItemData("6", textColor, 90, 1),
-                new ButtonItemData("7", textColor, 105, 1),
-                new ButtonItemData("8", textColor, 120, 1),
-                new ButtonItemData("9", textColor, 135, 1),
-                new ButtonItemData("10", textColor, 150, 1),
-        };
-    }
-
-    private ButtonItemData[] setHoursItemData() {
-        return new ButtonItemData[]{
-                new ButtonItemData("0.5", textColor, 0.5f, 2),
-                new ButtonItemData("1", textColor, 1f, 2),
-                new ButtonItemData("1.5", textColor, 1.5f, 2),
-                new ButtonItemData("2", textColor, 2f, 2),
-                new ButtonItemData("2.5", textColor, 2.5f, 2),
-                new ButtonItemData("3", textColor, 3f, 2),
-                new ButtonItemData("4", textColor, 4f, 2),
-                new ButtonItemData("5", textColor, 5f, 2),
-                new ButtonItemData("6", textColor, 6f, 2),
-                new ButtonItemData("8", textColor, 8f, 2),
-                new ButtonItemData("10", textColor, 10f, 2),
-                new ButtonItemData("12", textColor, 12f, 2),
-                new ButtonItemData("16", textColor, 16f, 2),
-                new ButtonItemData("24", textColor, 24f, 2),
-                new ButtonItemData("32", textColor, 32f, 2),
-                new ButtonItemData("40", textColor, 40f, 2),
-        };
-    }
-
-//    private ButtonItemData[] setMaterialsItemData() {
-//        return new ButtonItemData[]{
-//                new ButtonItemData("white marker fluid", textColor, 30f, 4),
-//                new ButtonItemData("blue marker fluid", textColor, 70f, 4),
-//                new ButtonItemData("postcrete", textColor, 5f, 4),
-//                new ButtonItemData("3\" post", textColor, 13f, 4),
-//                new ButtonItemData("4\" post", textColor, 20f, 4),
-//                new ButtonItemData("4' panel", textColor, 25f, 4),
-//                new ButtonItemData("5' panel", textColor, 26f, 4),
-//                new ButtonItemData("6' panel", textColor, 27f, 4),
-//                new ButtonItemData("4\" rail", textColor, 11f, 4),
-//        };
-//    }
-
-    private ButtonItemData[] setFrequencyItemData() {
-        return new ButtonItemData[]{
-                new ButtonItemData("1", textColor, 1f, 5),
-                new ButtonItemData("2", textColor, 2f, 5),
-                new ButtonItemData("3", textColor, 3f, 5),
-                new ButtonItemData("4", textColor, 4f, 5),
-                new ButtonItemData("5", textColor, 5f, 5),
-                new ButtonItemData("6", textColor, 6f, 5),
-                new ButtonItemData("8", textColor, 8f, 5),
-                new ButtonItemData("10", textColor, 10f, 5),
-                new ButtonItemData("12", textColor, 12f, 5),
-                new ButtonItemData("14", textColor, 14f, 5),
-                new ButtonItemData("16", textColor, 16f, 5),
-                new ButtonItemData("18", textColor, 18f, 5),
-                new ButtonItemData("20", textColor, 20f, 5),
-                new ButtonItemData("25", textColor, 25f, 5),
-        };
-    }
-
-    private ButtonItemData[] setPercentageItemData() {
-        return new ButtonItemData[]{
-                new ButtonItemData("10%", textColor, 10f, 6),
-                new ButtonItemData("15%", textColor, 15f, 6),
-                new ButtonItemData("20%", textColor, 20f, 6),
-                new ButtonItemData("25%", textColor, 25f, 6),
-                new ButtonItemData("30%", textColor, 30f, 6),
-                new ButtonItemData("35%", textColor, 35f, 6),
-                new ButtonItemData("40%", textColor, 40f, 6),
-                new ButtonItemData("45%", textColor, 45f, 6),
-                new ButtonItemData("50%", textColor, 50f, 6),
-                new ButtonItemData("60%", textColor, 60f, 6),
-                new ButtonItemData("80%", textColor, 80f, 6),
-                new ButtonItemData("100%", textColor, 100f, 6),
-        };
-    }
-
     @Override
     public void rVButtonClick(int position, int tag) {
-        ButtonItemData buttonItemData = null;
-        Log.d(TAG, "rVButtonClick: clicked ");
+        ButtonItemData buttonItemData;
         switch (tag) {
-
             //workers
             case 1:
-                buttonItemData = workersItemData[position];
+                buttonItemData = buttonData.getWorkersItemData()[position];
                 this.noOfWorkers = buttonItemData.getValue();
                 break;
 
             // hours
             case 2:
-                buttonItemData = hoursItemData[position];
+                buttonItemData = buttonData.getHoursItemData()[position];
                 this.noOfHours = buttonItemData.getValue();
                 break;
 
-//            // machinery
-//            case 3:
-//                buttonItemData = machineryItemData[position];
-//                this.machineryCost += buttonItemData.getValue();
-//                break;
-//
-//            // materials
-//            case 4:
-//                buttonItemData = materialsItemData[position];
-//                this.materialsCost += buttonItemData.getValue();
-//                break;
-
             // frequency
             case 5:
-                buttonItemData = frequencyItemData[position];
+                buttonItemData = buttonData.getFrequencyItemData()[position];
                 this.frequency = buttonItemData.getValue();
                 break;
 
             // percentage
             case 6:
-                buttonItemData = percentageItemData[position];
+                buttonItemData = buttonData.getPercentageItemData()[position];
                 this.percentage = buttonItemData.getValue();
                 break;
         }
-
         displayTotal();
     }
 
-    private void displayTotal() {
+    public void displayTotal() {
         totalCost = sumTotalCosts();
         costPlusVAT = addVAT(totalCost);
 
         TextView textView = findViewById(R.id.totalTextView);
         textView.setTypeface(null, Typeface.BOLD);
         textView.setText("£" + df.format(totalCost) + " + VAT = £" + df.format(costPlusVAT));
+    }
+
+    private void addMachineryCost() {
+        this.machineryCost = 0;
+        for (ExtrasAddedItemData itemData : machineryDataList) {
+            this.machineryCost += itemData.getPrice() * itemData.getNumber();
+        }
+    }
+
+    private void addMaterialsCost() {
+        this.materialsCost = 0;
+        for (ExtrasAddedItemData itemData : materialsDataList) {
+            this.materialsCost += itemData.getPrice() * itemData.getNumber();
+        }
+    }
+
+    public void deleteMaterialsItem() {
+        addMaterialsCost();
+        displayTotal();
+    }
+
+    public void deleteMachineryItem() {
+        addMachineryCost();
+        displayTotal();
     }
 
     private float sumTotalCosts() {
@@ -297,14 +407,5 @@ public class AddJobActivity extends AppCompatActivity implements NumericRVAdapte
     private float addVAT(float preVATTotal) {
         float vatToAdd = preVATTotal * 0.2f;
         return vatToAdd + preVATTotal;
-    }
-
-
-    public void addMachinery(ExtrasAddedItemData extrasAddedItemData) {
-        for (int index = 0; index < itemDataList.size(); index++) {
-            itemDataList.add(0, extrasAddedItemData);
-            extrasRV.getAdapter().notifyItemInserted(0);
-        }
-
     }
 }

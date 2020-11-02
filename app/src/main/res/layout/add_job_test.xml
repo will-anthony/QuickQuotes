@@ -16,7 +16,7 @@
         android:paddingEnd="2dp"
         android:text="@string/total"
         android:textAlignment="viewStart"
-        android:textColor="@color/linkWater"
+        android:textColor="@color/orange"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/totalTextView"
         app:layout_constraintStart_toStartOf="parent"
@@ -32,7 +32,8 @@
         android:background="@color/blueDull"
         android:gravity="center_vertical"
         android:paddingStart="10dp"
-        android:textColor="@color/linkWater"
+        android:textAlignment="textEnd"
+        android:textColor="@color/orange"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -193,7 +194,7 @@
                 android:textAlignment="center"
                 android:textColor="@color/linkWater"
                 android:textStyle="bold"
-                app:layout_constraintTop_toBottomOf="@+id/extrasRV"
+                app:layout_constraintTop_toBottomOf="@id/materialsAddedRV"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 tools:layout_editor_absoluteY="319dp" />
@@ -223,13 +224,21 @@
                 app:layout_constraintTop_toBottomOf="@+id/frequency_recyclerview" />
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/extrasRV"
+                android:id="@+id/extrasAddedRV"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/addMachineryButton" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/materialsAddedRV"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/extrasAddedRV" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

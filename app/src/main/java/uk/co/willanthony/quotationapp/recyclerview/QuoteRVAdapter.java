@@ -13,7 +13,7 @@ import java.util.List;
 
 import uk.co.willanthony.quotationapp.util.DisplayCost;
 import uk.co.willanthony.quotationapp.Job;
-import uk.co.willanthony.quotationapp.JobPopUpController;
+import uk.co.willanthony.quotationapp.dialogs.JobSummaryDialog;
 import uk.co.willanthony.quotationapp.R;
 import uk.co.willanthony.quotationapp.database.QuoteDatabase;
 
@@ -72,13 +72,13 @@ public class QuoteRVAdapter extends RecyclerView.Adapter<QuoteRVAdapter.JobItemV
 
     public class JobItemViewHolder extends RecyclerView.ViewHolder {
         TextView jobTitle, jobPrice;
-        JobPopUpController jobPopUpController;
+        JobSummaryDialog jobPopUpController;
 
         public JobItemViewHolder(@NonNull final View itemView) {
             super(itemView);
             this.jobTitle = itemView.findViewById(R.id.jobTitle);
             this.jobPrice = itemView.findViewById(R.id.jobPrice);
-            this.jobPopUpController = new JobPopUpController(context);
+            this.jobPopUpController = new JobSummaryDialog(context);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

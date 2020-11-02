@@ -1,21 +1,27 @@
-package uk.co.willanthony.quotationapp;
+package uk.co.willanthony.quotationapp.dialogs;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import uk.co.willanthony.quotationapp.Job;
+import uk.co.willanthony.quotationapp.R;
+import uk.co.willanthony.quotationapp.activities.AddJobActivity;
 import uk.co.willanthony.quotationapp.database.JobDatabase;
 import uk.co.willanthony.quotationapp.util.DisplayCost;
 
-public class JobPopUpController {
+public class JobSummaryDialog {
     private Dialog dialog;
     private Context context;
     private TextView titleView, descriptionView, totalView;
     private Button editButton, cancelButton;
+    private Job job;
 
-    public JobPopUpController(Context context) {
+    public JobSummaryDialog(Context context) {
         this.context = context;
         this.dialog = new Dialog(context);
         this.dialog.setContentView(R.layout.job_pop_up);
@@ -31,7 +37,7 @@ public class JobPopUpController {
     }
 
     public void showPopUp(long jobID) {
-        Job job = getJobFromDatabase(jobID);
+        this.job = getJobFromDatabase(jobID);
         this.titleView.setText(job.getTitle());
         this.descriptionView.setText(job.getDescription());
         this.totalView.setText(new DisplayCost().setJobTotalString(job));
@@ -50,6 +56,9 @@ public class JobPopUpController {
         this.editButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intent = new Intent(context, AddJobActivity.class);
+                intent.putExtra("jobID", job.getID());
+                context.startActivity(intent);
                 dialog.dismiss();
             }
         });

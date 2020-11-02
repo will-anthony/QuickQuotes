@@ -15,7 +15,7 @@ import uk.co.willanthony.quotationapp.Quote;
 public class QuoteDatabase extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 2;
-    private static final String DATABASE_NAME = "QuoteDB1";
+    private static final String DATABASE_NAME = "QuoteDB3";
     private static final String TABLE_NAME = "QuoteTable";
 
     // columns name for database table

@@ -15,7 +15,7 @@ public class NumericRVAdapter extends RecyclerView.Adapter<NumericRVAdapter.MyVi
 
     private ButtonItemData[] itemDataArray;
     private RVButtonListener rvButtonListener;
-    private View lastClickedView = null;
+    private ButtonItemData lastButtonSelected = null;
 
 
     public NumericRVAdapter(ButtonItemData[] itemDataArray, RVButtonListener rvButtonListener) {
@@ -31,33 +31,52 @@ public class NumericRVAdapter extends RecyclerView.Adapter<NumericRVAdapter.MyVi
         return new MyViewHolder(arrayItem, this.rvButtonListener);
     }
 
+    public ButtonItemData[] getItemDataArray() {
+        return itemDataArray;
+    }
+    public String getBooleanString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for(int i = 0; i < itemDataArray.length; i++) {
+            if(itemDataArray[i].isSelected()) {
+                stringBuilder.append("t");
+            } else {
+                stringBuilder.append("f");
+            }
+        }
+        return stringBuilder.toString();
+    }
+
     @Override
     public void onBindViewHolder(@NonNull final MyViewHolder holder, int position) {
         final ButtonItemData buttonItemData = itemDataArray[position];
+        if (!buttonItemData.isSelected()) {
+            holder.getButton().setBackgroundResource(R.drawable.blank_background);
+        } else {
+            holder.getButton().setBackgroundResource(R.drawable.edit_button_style);
+        }
         holder.getButton().setText(buttonItemData.getButtonText());
         holder.getButton().setTextColor(Color.parseColor(buttonItemData.getTextColor()));
         holder.getButton().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 int position = holder.getAdapterPosition();
-                int tag = itemDataArray[position].getTag();
-                swapCheckedViewBackGround(view);
+                ButtonItemData itemData = itemDataArray[position];
+                int tag = itemData.getTag();
+                changeSelectedBackground(view, buttonItemData);
+
                 rvButtonListener.rVButtonClick(position, tag);
             }
         });
     }
 
-    public void removeCheckedBackground() {
-        lastClickedView.setBackgroundResource(R.drawable.blank_background);
-        lastClickedView = null;
-    }
-
-    private void swapCheckedViewBackGround(View view) {
-        if(lastClickedView != null){
-            lastClickedView.setBackgroundResource(R.drawable.blank_background);
-        }
+    private void changeSelectedBackground(View view, ButtonItemData buttonItemData) {
         view.setBackgroundResource(R.drawable.edit_button_style);
-        this.lastClickedView = view;
+        buttonItemData.setSelected(true);
+        if(lastButtonSelected != null) {
+            lastButtonSelected.setSelected(false);
+            notifyDataSetChanged();
+        }
+        lastButtonSelected = buttonItemData;
     }
 
     @Override
@@ -66,7 +85,7 @@ public class NumericRVAdapter extends RecyclerView.Adapter<NumericRVAdapter.MyVi
     }
 
     // inner class
-    class MyViewHolder extends RecyclerView.ViewHolder {
+    public class MyViewHolder extends RecyclerView.ViewHolder {
 
         private static final String TAG = "MyViewHolder";
         private Button button;
@@ -77,12 +96,15 @@ public class NumericRVAdapter extends RecyclerView.Adapter<NumericRVAdapter.MyVi
 
             this.button = itemView.findViewById(R.id.recycleView_button);
             this.rvButtonListener = rvButtonListener;
-
         }
 
         public Button getButton() {
             return button;
         }
+    }
+
+    public void setLastButtonSelected(ButtonItemData lastButtonSelected) {
+        this.lastButtonSelected = lastButtonSelected;
     }
 
     // interface

@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,23 +14,25 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 import uk.co.willanthony.quotationapp.R;
+import uk.co.willanthony.quotationapp.activities.AddJobActivity;
+import uk.co.willanthony.quotationapp.recyclerview.dialog_rv.item_data.ExtrasAddedItemData;
 import uk.co.willanthony.quotationapp.util.DisplayCost;
 
-public class MachineryAddedRVAdapter extends RecyclerView.Adapter<MachineryAddedRVAdapter.MyViewHolder> implements DeletableAdapter {
+public class JobActExtrasRVAdapter extends RecyclerView.Adapter<JobActExtrasRVAdapter.MyViewHolder> implements DeletableAdapter {
     private List<ExtrasAddedItemData> itemDataList;
-    private Context context;
+    private AddJobActivity addJobActivity;
 
 
-    public MachineryAddedRVAdapter(List<ExtrasAddedItemData> itemDataList, Context context) {
+    public JobActExtrasRVAdapter(List<ExtrasAddedItemData> itemDataList, AddJobActivity addJobActivity) {
         this.itemDataList = itemDataList;
-        this.context = context;
+        this.addJobActivity = addJobActivity;
     }
 
     @NonNull
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        View arrayItem = layoutInflater.inflate(R.layout.extras_selected_item_view, parent, false);
+        View arrayItem = layoutInflater.inflate(R.layout.extra_in_job_activity, parent, false);
         return new MyViewHolder(arrayItem);
     }
 
@@ -51,7 +54,7 @@ public class MachineryAddedRVAdapter extends RecyclerView.Adapter<MachineryAdded
         return itemDataList.size();
     }
 
-    public void addMachinery(ExtrasAddedItemData extrasAddedItemData) {
+    public void addExtras(ExtrasAddedItemData extrasAddedItemData) {
 
         for(int index = 0; index < itemDataList.size(); index++) {
             if(extrasAddedItemData.getName().equals(itemDataList.get(index).getName())) {
@@ -64,14 +67,30 @@ public class MachineryAddedRVAdapter extends RecyclerView.Adapter<MachineryAdded
 
     }
 
+    public String getExtrasString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for(int index = 0; index < getItemCount(); index++) {
+            stringBuilder.append(itemDataList.get(index).getName());
+            stringBuilder.append("~");
+            stringBuilder.append(itemDataList.get(index).getNumber());
+            stringBuilder.append("/");
+        }
+        Toast.makeText(this.addJobActivity,stringBuilder, Toast.LENGTH_LONG).show();
+        return stringBuilder.toString();
+    }
+
     public List<ExtrasAddedItemData> getItemDataList() {
         return itemDataList;
     }
 
     @Override
     public void delete(int position) {
+        ExtrasAddedItemData item = itemDataList.get(position);
+
         itemDataList.remove(position);
         notifyItemRemoved(position);
+        this.addJobActivity.deleteMachineryItem();
+        this.addJobActivity.deleteMaterialsItem();
     }
 
     // inner class

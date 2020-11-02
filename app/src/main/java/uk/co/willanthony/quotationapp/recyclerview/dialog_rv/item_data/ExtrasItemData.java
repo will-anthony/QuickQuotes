@@ -1,11 +1,9 @@
-package uk.co.willanthony.quotationapp.recyclerview;
+package uk.co.willanthony.quotationapp.recyclerview.dialog_rv.item_data;
 
 public class ExtrasItemData {
 
     String name;
     float price;
-
-
 
     public ExtrasItemData(String name, float price) {
         this.name = name;

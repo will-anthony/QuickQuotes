@@ -4,7 +4,7 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 import uk.co.willanthony.quotationapp.Job;
-import uk.co.willanthony.quotationapp.recyclerview.ExtrasAddedItemData;
+import uk.co.willanthony.quotationapp.recyclerview.dialog_rv.item_data.ExtrasAddedItemData;
 
 public class DisplayCost {
 

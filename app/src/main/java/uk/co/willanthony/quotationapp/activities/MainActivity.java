@@ -20,7 +20,7 @@ import uk.co.willanthony.quotationapp.Quote;
 import uk.co.willanthony.quotationapp.database.QuoteDatabase;
 import uk.co.willanthony.quotationapp.R;
 import uk.co.willanthony.quotationapp.recyclerview.MainMenuRVAdapter;
-import uk.co.willanthony.quotationapp.recyclerview.SwipeToDeleteCallback;
+import uk.co.willanthony.quotationapp.util.SwipeToDeleteCallback;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setUpToolbar() {
-        this.toolbar = findViewById(R.id.main_toolbar);
+        this.toolbar = findViewById(R.id.main_pdf_toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitleTextColor(getResources().getColor(R.color.white));
         getSupportActionBar().setTitle("QUICKQUOTE");
@@ -59,16 +59,6 @@ public class MainActivity extends AppCompatActivity {
         this.recyclerView.setAdapter(adapter);
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeToDeleteCallback(adapter, this));
         itemTouchHelper.attachToRecyclerView(recyclerView);
-    }
-
-    private void openNewQuoteActivity() {
-        Intent intent = new Intent(this, QuoteActivity.class);
-        startActivity(intent);
-    }
-
-    private void openAddJobActivity() {
-        Intent intent = new Intent(this, AddJobActivity.class);
-        startActivity(intent);
     }
 
     @Override

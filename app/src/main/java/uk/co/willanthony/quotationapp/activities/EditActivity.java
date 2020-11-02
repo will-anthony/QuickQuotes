@@ -1,7 +1,6 @@
 package uk.co.willanthony.quotationapp.activities;
 
 import android.content.Intent;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -80,7 +79,7 @@ public class EditActivity extends AppCompatActivity {
     }
 
     private void setUpToolbar() {
-        toolbar = findViewById(R.id.main_toolbar);
+        toolbar = findViewById(R.id.main_pdf_toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitleTextColor(getResources().getColor(R.color.white));
         getSupportActionBar().setTitle(quoteFromDB.getTitle());

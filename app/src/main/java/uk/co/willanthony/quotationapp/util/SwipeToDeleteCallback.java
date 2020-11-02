@@ -1,4 +1,4 @@
-package uk.co.willanthony.quotationapp.recyclerview;
+package uk.co.willanthony.quotationapp.util;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import uk.co.willanthony.quotationapp.R;
+import uk.co.willanthony.quotationapp.recyclerview.DeletableAdapter;
 
 public class SwipeToDeleteCallback extends ItemTouchHelper.SimpleCallback {
 

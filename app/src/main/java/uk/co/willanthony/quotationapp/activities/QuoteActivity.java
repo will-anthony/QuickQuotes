@@ -68,7 +68,7 @@ public class QuoteActivity extends AppCompatActivity {
     private void initialiseViews() {
         this.quoteIDTextView = findViewById(R.id.quoteNumberTextView);
         this.quoteTitleTextView = findViewById(R.id.quoteTitle);
-        this.toolbar = findViewById(R.id.main_toolbar);
+        this.toolbar = findViewById(R.id.main_pdf_toolbar);
         this.recyclerView = findViewById(R.id.listOfJobs);
         this.fab = findViewById(R.id.addJobButton);
         this.totalTextView = findViewById(R.id.totalTextView);
@@ -152,6 +152,9 @@ public class QuoteActivity extends AppCompatActivity {
     private void retrieveJobs() {
         JobDatabase jobDatabase = new JobDatabase(this);
         this.jobs = jobDatabase.getQuoteJobList(quoteID);
+        for (Job job : jobs) {
+            Toast.makeText(this,job.getCostMinusVAT() + " + " + job.getCostPlusVAT(), Toast.LENGTH_SHORT).show();
+        }
         jobDatabase.close();
     }
 
