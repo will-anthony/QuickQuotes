@@ -16,6 +16,7 @@ import java.util.List;
 
 import uk.co.willanthony.quotationapp.Quote;
 import uk.co.willanthony.quotationapp.R;
+import uk.co.willanthony.quotationapp.activities.MainActivity;
 import uk.co.willanthony.quotationapp.activities.QuoteActivity;
 import uk.co.willanthony.quotationapp.activities.QuotePDFActivity;
 import uk.co.willanthony.quotationapp.database.QuoteDatabase;
@@ -27,12 +28,13 @@ public class MainMenuRVAdapter extends RecyclerView.Adapter<MainMenuRVAdapter.Qu
     private Context context;
     private Quote deletedQuote;
     private int deletedPosition;
+    private MainActivity mainActivity;
 
-    public MainMenuRVAdapter(Context context, List<Quote> quotes){
+    public MainMenuRVAdapter(List<Quote> quotes, MainActivity mainActivity, Context context){
         this.context = context;
+        this.mainActivity = mainActivity;
         this.inflater = LayoutInflater.from(context);
         this.quotes = quotes;
-
     }
 
     @NonNull
@@ -70,6 +72,7 @@ public class MainMenuRVAdapter extends RecyclerView.Adapter<MainMenuRVAdapter.Qu
         this.deletedQuote = quotes.get(position);
         deletedPosition = position;
         quotes.remove(position);
+        mainActivity.shouldImageBeVisible();
         notifyItemRemoved(position);
         QuoteDatabase quoteDatabase = new QuoteDatabase(context);
         quoteDatabase.deleteQuote(deletedQuote.getID());

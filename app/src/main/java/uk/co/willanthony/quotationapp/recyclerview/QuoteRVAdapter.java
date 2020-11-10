@@ -66,6 +66,7 @@ public class QuoteRVAdapter extends RecyclerView.Adapter<QuoteRVAdapter.JobItemV
         deletedPosition = position;
         jobs.remove(position);
         notifyItemRemoved(position);
+
         QuoteDatabase quoteDatabase = new QuoteDatabase(context);
         quoteDatabase.deleteQuote(deletedQuote.getID());
     }

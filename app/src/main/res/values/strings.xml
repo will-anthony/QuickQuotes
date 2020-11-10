@@ -60,5 +60,24 @@
     <string name="description">description</string>
     <string name="hint_job_title"><i>new job title</i></string>
     <string name="hint_job_description"><i>job description</i></string>
+    <string name="quote_no">quote no</string>
+    <string name="yours_faithfully">"yours faithfully, \n "
+                "\n"
+                "\n"
+                "Will Jones \n "
+                "J H Jones and Sons \n "
+                "If tender is accepted please sign below and return one copy \n"
+                "\n"
+                "signature....................      date...................."</string>
+
+    <string name="quote_footer">"telephone: 01225 703295   email will-anthony@hotmail.com \n "
+                "VAT no 137 9615 41"</string>
+
+    <string name="work_address">"  J H Jones and Son's \n "
+                        "Park Farm \n "
+                        "Bath Road \n "
+                        "Atworth \n "
+                        "Wiltshire \n "
+                        "SN12 8HT"</string>
 
 </resources>

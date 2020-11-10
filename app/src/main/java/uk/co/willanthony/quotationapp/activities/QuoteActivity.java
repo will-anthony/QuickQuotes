@@ -9,6 +9,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,6 +39,8 @@ public class QuoteActivity extends AppCompatActivity {
     private EditText quoteTitleTextView;
     private TextView quoteIDTextView;
     private TextView totalTextView;
+    private TextView addJobTextView;
+    private ImageView addJobBackground;
     private FloatingActionButton fab;
 
     private QuoteRVAdapter adapter;
@@ -62,6 +65,7 @@ public class QuoteActivity extends AppCompatActivity {
         setUpIDVIew();
         setUpRecyclerView();
         setCostTextView();
+        setBackgroundImage();
         Toast.makeText(QuoteActivity.this, "Quote Activity", Toast.LENGTH_SHORT).show();
     }
 
@@ -78,7 +82,7 @@ public class QuoteActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         long checkQuoteID = intent.getLongExtra("quoteID", -1);
-        if(checkQuoteID == -1) {
+        if (checkQuoteID == -1) {
             this.quoteID = saveQuoteToDataBase();
             retrieveQuote(quoteID);
         } else {
@@ -153,7 +157,7 @@ public class QuoteActivity extends AppCompatActivity {
         JobDatabase jobDatabase = new JobDatabase(this);
         this.jobs = jobDatabase.getQuoteJobList(quoteID);
         for (Job job : jobs) {
-            Toast.makeText(this,job.getCostMinusVAT() + " + " + job.getCostPlusVAT(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, job.getCostMinusVAT() + " + " + job.getCostPlusVAT(), Toast.LENGTH_SHORT).show();
         }
         jobDatabase.close();
     }
@@ -172,6 +176,23 @@ public class QuoteActivity extends AppCompatActivity {
     private void setCostTextView() {
         DisplayCost displayCost = new DisplayCost();
         this.totalTextView.setText(displayCost.setJobTotalString(jobs));
+    }
+
+    private void setBackgroundImage() {
+        this.addJobTextView = findViewById(R.id.addJobTextView);
+        this.addJobBackground = findViewById(R.id.pageSheetImage);
+
+        checkBackgroundVisibility();
+    }
+
+    public void checkBackgroundVisibility() {
+        if (recyclerView.getAdapter().getItemCount() >= 3) {
+            addJobTextView.setVisibility(View.INVISIBLE);
+            addJobBackground.setVisibility(View.INVISIBLE);
+        } else {
+            addJobTextView.setVisibility(View.VISIBLE);
+            addJobBackground.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
