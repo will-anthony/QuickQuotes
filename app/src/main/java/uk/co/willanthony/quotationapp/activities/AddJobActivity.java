@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -19,16 +18,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import uk.co.willanthony.quotationapp.Job;
-import uk.co.willanthony.quotationapp.dialogs.ExtrasDialog;
 import uk.co.willanthony.quotationapp.R;
 import uk.co.willanthony.quotationapp.database.JobDatabase;
+import uk.co.willanthony.quotationapp.dialogs.ExtrasDialog;
 import uk.co.willanthony.quotationapp.recyclerview.ButtonItemData;
 import uk.co.willanthony.quotationapp.recyclerview.DeletableAdapter;
-import uk.co.willanthony.quotationapp.recyclerview.dialog_rv.ExtrasAddedRVAdapter;
-import uk.co.willanthony.quotationapp.recyclerview.dialog_rv.ExtrasToAddRVAdapter;
-import uk.co.willanthony.quotationapp.recyclerview.dialog_rv.item_data.ExtrasAddedItemData;
 import uk.co.willanthony.quotationapp.recyclerview.JobActExtrasRVAdapter;
 import uk.co.willanthony.quotationapp.recyclerview.NumericRVAdapter;
+import uk.co.willanthony.quotationapp.recyclerview.dialog_rv.item_data.ExtrasAddedItemData;
 import uk.co.willanthony.quotationapp.recyclerview.dialog_rv.item_data.ExtrasItemData;
 import uk.co.willanthony.quotationapp.util.RVButtonData;
 import uk.co.willanthony.quotationapp.util.SwipeToDeleteCallback;
@@ -37,14 +34,11 @@ public class AddJobActivity extends AppCompatActivity implements NumericRVAdapte
 
     private EditText jobTitle;
     private EditText jobDescription;
-    private Button saveButton;
-    private Button machineryButton, materialsButton;
     private List<ExtrasAddedItemData> machineryDataList;
     private List<ExtrasAddedItemData> materialsDataList;
     private ExtrasDialog machineryDialog, materialsDialog;
     private JobActExtrasRVAdapter machineryRVAdapter, materialsRVAdapter;
     private RVButtonData buttonData;
-    private long jobID;
     private Job job;
     private long quoteID;
 
@@ -53,7 +47,7 @@ public class AddJobActivity extends AppCompatActivity implements NumericRVAdapte
 
     private float noOfWorkers, noOfHours, machineryCost, materialsCost, frequency, percentage;
     private float totalCost, costPlusVAT;
-    DecimalFormat df;
+    private DecimalFormat df;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,12 +70,13 @@ public class AddJobActivity extends AppCompatActivity implements NumericRVAdapte
     private void setUpJobDataBase() {
         Intent intent = getIntent();
         long checkJobID = intent.getLongExtra("jobID", -1);
+        long jobID;
         if (checkJobID == -1) {
-            this.jobID = saveJobToDataBase();
+            jobID = saveJobToDataBase();
             retrieveJob(jobID);
             initSumValues();
         } else {
-            this.jobID = checkJobID;
+            jobID = checkJobID;
             retrieveJob(jobID);
             setJobState();
         }
@@ -272,7 +267,7 @@ public class AddJobActivity extends AppCompatActivity implements NumericRVAdapte
     }
 
     private void setUpSaveButton() {
-        this.saveButton = findViewById(R.id.saveButton);
+        Button saveButton = findViewById(R.id.saveButton);
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -290,8 +285,8 @@ public class AddJobActivity extends AppCompatActivity implements NumericRVAdapte
     }
 
     private void setUpMachineryButton() {
-        this.machineryButton = findViewById(R.id.addMachineryButton);
-        this.machineryButton.setOnClickListener(new View.OnClickListener() {
+        Button machineryButton = findViewById(R.id.addMachineryButton);
+        machineryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 machineryDialog.showPopUp();
@@ -301,8 +296,8 @@ public class AddJobActivity extends AppCompatActivity implements NumericRVAdapte
     }
 
     private void setUpMaterialsButton() {
-        this.materialsButton = findViewById(R.id.addMaterialsButton);
-        this.materialsButton.setOnClickListener(new View.OnClickListener() {
+        Button materialsButton = findViewById(R.id.addMaterialsButton);
+        materialsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 materialsDialog.showPopUp();

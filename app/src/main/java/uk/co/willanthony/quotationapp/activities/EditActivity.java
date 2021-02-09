@@ -26,7 +26,7 @@ import java.util.List;
 import uk.co.willanthony.quotationapp.Job;
 import uk.co.willanthony.quotationapp.Quote;
 import uk.co.willanthony.quotationapp.database.JobDatabase;
-import uk.co.willanthony.quotationapp.database.QuoteDatabase;
+import uk.co.willanthony.quotationapp.database.QuoteDatabaseHelper;
 import uk.co.willanthony.quotationapp.R;
 import uk.co.willanthony.quotationapp.recyclerview.QuoteRVAdapter;
 
@@ -70,9 +70,9 @@ public class EditActivity extends AppCompatActivity {
     private void retrieveDBInfo() {
         this.intent = getIntent();
         this.quoteID = intent.getLongExtra("ID", 0);
-        QuoteDatabase quoteDatabase = new QuoteDatabase(this);
-        this.quoteFromDB = quoteDatabase.getQuote(quoteID);
-        quoteDatabase.close();
+        QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(this);
+        this.quoteFromDB = quoteDatabaseHelper.getQuote(quoteID);
+        quoteDatabaseHelper.close();
 
         JobDatabase database = new JobDatabase(this);
         this.jobs = database.getQuoteJobList(quoteID);
@@ -187,8 +187,8 @@ public class EditActivity extends AppCompatActivity {
 
             System.out.println(quoteTitle.getText().toString() + " " + todaysDate + " " + currentTime);
 
-            QuoteDatabase quoteDatabase = new QuoteDatabase(this);
-            long id = quoteDatabase.editQuote(quote);
+            QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(this);
+            long id = quoteDatabaseHelper.editQuote(quote);
             Toast.makeText(this, "Save button clicked", Toast.LENGTH_SHORT).show();
             goToMain();
         }

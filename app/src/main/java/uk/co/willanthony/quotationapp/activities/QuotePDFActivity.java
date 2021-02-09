@@ -36,7 +36,7 @@ import uk.co.willanthony.quotationapp.Job;
 import uk.co.willanthony.quotationapp.Quote;
 import uk.co.willanthony.quotationapp.R;
 import uk.co.willanthony.quotationapp.database.JobDatabase;
-import uk.co.willanthony.quotationapp.database.QuoteDatabase;
+import uk.co.willanthony.quotationapp.database.QuoteDatabaseHelper;
 import uk.co.willanthony.quotationapp.recyclerview.JobPDFAdapter;
 import uk.co.willanthony.quotationapp.util.DisplayCost;
 
@@ -78,9 +78,9 @@ public class QuotePDFActivity extends AppCompatActivity {
         if (quoteID == -1) {
             Toast.makeText(this, "Quote not passed to quotePDF", Toast.LENGTH_LONG).show();
         }
-        QuoteDatabase quoteDatabase = new QuoteDatabase(this);
-        this.quote = quoteDatabase.getQuote(quoteID);
-        quoteDatabase.close();
+        QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(this);
+        this.quote = quoteDatabaseHelper.getQuote(quoteID);
+        quoteDatabaseHelper.close();
     }
 
     private void setDate() {

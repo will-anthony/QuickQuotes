@@ -1,17 +1,14 @@
 package uk.co.willanthony.quotationapp.activities;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,11 +20,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
-import java.util.prefs.Preferences;
 
-import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt;
 import uk.co.willanthony.quotationapp.Quote;
-import uk.co.willanthony.quotationapp.database.QuoteDatabase;
+import uk.co.willanthony.quotationapp.database.QuoteDatabaseHelper;
 import uk.co.willanthony.quotationapp.R;
 import uk.co.willanthony.quotationapp.recyclerview.MainMenuRVAdapter;
 import uk.co.willanthony.quotationapp.util.SwipeToDeleteCallback;
@@ -63,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void retrieveDBInfo() {
-        QuoteDatabase database = new QuoteDatabase(this);
+        QuoteDatabaseHelper database = new QuoteDatabaseHelper(this);
         this.allQuotes = database.getAllQuotes();
     }
 

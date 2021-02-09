@@ -29,7 +29,7 @@ import uk.co.willanthony.quotationapp.Job;
 import uk.co.willanthony.quotationapp.Quote;
 import uk.co.willanthony.quotationapp.R;
 import uk.co.willanthony.quotationapp.database.JobDatabase;
-import uk.co.willanthony.quotationapp.database.QuoteDatabase;
+import uk.co.willanthony.quotationapp.database.QuoteDatabaseHelper;
 import uk.co.willanthony.quotationapp.recyclerview.QuoteRVAdapter;
 
 public class QuoteActivity extends AppCompatActivity {
@@ -93,14 +93,14 @@ public class QuoteActivity extends AppCompatActivity {
 
     private long saveQuoteToDataBase() {
         Quote quote = new Quote(quoteTitleTextView.getText().toString(), todaysDate, currentTime);
-        QuoteDatabase quoteDatabase = new QuoteDatabase(this);
-        return quoteDatabase.addQuote(quote);
+        QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(this);
+        return quoteDatabaseHelper.addQuote(quote);
     }
 
     private void retrieveQuote(long quoteID) {
-        QuoteDatabase quoteDatabase = new QuoteDatabase(this);
-        this.quote = quoteDatabase.getQuote(quoteID);
-        quoteDatabase.close();
+        QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(this);
+        this.quote = quoteDatabaseHelper.getQuote(quoteID);
+        quoteDatabaseHelper.close();
     }
 
     private void setUpTitleText() {
@@ -143,8 +143,8 @@ public class QuoteActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Quote quote = new Quote(quoteID, quoteTitleTextView.getText().toString(), todaysDate, currentTime);
 
-                QuoteDatabase quoteDatabase = new QuoteDatabase(QuoteActivity.this);
-                quoteDatabase.editQuote(quote);
+                QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(QuoteActivity.this);
+                quoteDatabaseHelper.editQuote(quote);
 
                 Intent intent = new Intent(QuoteActivity.this, AddJobActivity.class);
                 intent.putExtra("quoteID", quoteID);
@@ -208,8 +208,8 @@ public class QuoteActivity extends AppCompatActivity {
 
             Quote quote = new Quote(quoteID, quoteTitleTextView.getText().toString(), todaysDate, currentTime);
 
-            QuoteDatabase quoteDatabase = new QuoteDatabase(this);
-            quoteDatabase.editQuote(quote);
+            QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(this);
+            quoteDatabaseHelper.editQuote(quote);
             goToMain();
         }
         return super.onOptionsItemSelected(item);

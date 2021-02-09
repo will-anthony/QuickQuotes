@@ -19,7 +19,7 @@ import uk.co.willanthony.quotationapp.R;
 import uk.co.willanthony.quotationapp.activities.MainActivity;
 import uk.co.willanthony.quotationapp.activities.QuoteActivity;
 import uk.co.willanthony.quotationapp.activities.QuotePDFActivity;
-import uk.co.willanthony.quotationapp.database.QuoteDatabase;
+import uk.co.willanthony.quotationapp.database.QuoteDatabaseHelper;
 
 public class MainMenuRVAdapter extends RecyclerView.Adapter<MainMenuRVAdapter.QuoteItemViewHolder> implements DeletableAdapter {
 
@@ -74,8 +74,8 @@ public class MainMenuRVAdapter extends RecyclerView.Adapter<MainMenuRVAdapter.Qu
         quotes.remove(position);
         mainActivity.shouldImageBeVisible();
         notifyItemRemoved(position);
-        QuoteDatabase quoteDatabase = new QuoteDatabase(context);
-        quoteDatabase.deleteQuote(deletedQuote.getID());
+        QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(context);
+        quoteDatabaseHelper.deleteQuote(deletedQuote.getID());
     }
 
     public class QuoteItemViewHolder extends RecyclerView.ViewHolder{

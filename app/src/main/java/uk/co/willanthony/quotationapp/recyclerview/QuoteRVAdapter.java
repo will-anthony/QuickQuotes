@@ -15,7 +15,7 @@ import uk.co.willanthony.quotationapp.util.DisplayCost;
 import uk.co.willanthony.quotationapp.Job;
 import uk.co.willanthony.quotationapp.dialogs.JobSummaryDialog;
 import uk.co.willanthony.quotationapp.R;
-import uk.co.willanthony.quotationapp.database.QuoteDatabase;
+import uk.co.willanthony.quotationapp.database.QuoteDatabaseHelper;
 
 public class QuoteRVAdapter extends RecyclerView.Adapter<QuoteRVAdapter.JobItemViewHolder> {
 
@@ -67,8 +67,8 @@ public class QuoteRVAdapter extends RecyclerView.Adapter<QuoteRVAdapter.JobItemV
         jobs.remove(position);
         notifyItemRemoved(position);
 
-        QuoteDatabase quoteDatabase = new QuoteDatabase(context);
-        quoteDatabase.deleteQuote(deletedQuote.getID());
+        QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(context);
+        quoteDatabaseHelper.deleteQuote(deletedQuote.getID());
     }
 
     public class JobItemViewHolder extends RecyclerView.ViewHolder {

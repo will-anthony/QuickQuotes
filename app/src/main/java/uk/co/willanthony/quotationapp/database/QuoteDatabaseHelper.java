@@ -12,7 +12,7 @@ import java.util.List;
 
 import uk.co.willanthony.quotationapp.Quote;
 
-public class QuoteDatabase extends SQLiteOpenHelper {
+public class QuoteDatabaseHelper extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 2;
     private static final String DATABASE_NAME = "QuoteDB5";
@@ -31,7 +31,7 @@ public class QuoteDatabase extends SQLiteOpenHelper {
     private static final int TIME_INDEX = 3;
 
 
-    public QuoteDatabase(Context context) {
+    public QuoteDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
@@ -77,11 +77,15 @@ public class QuoteDatabase extends SQLiteOpenHelper {
         if(cursor != null)
             cursor.moveToFirst();
 
-        return new Quote(
+        assert cursor != null;
+        Quote quote = new Quote(
                 Long.parseLong(cursor.getString(ID_INDEX)),
                 cursor.getString(TITLE_INDEX),
                 cursor.getString(DATE_INDEX),
                 cursor.getString(TIME_INDEX));
+        cursor.close();
+
+        return quote;
     }
 
 
@@ -100,6 +104,7 @@ public class QuoteDatabase extends SQLiteOpenHelper {
                 allQuotes.add(quote);
             } while (cursor.moveToNext());
         }
+        cursor.close();
 
         return allQuotes;
     }
