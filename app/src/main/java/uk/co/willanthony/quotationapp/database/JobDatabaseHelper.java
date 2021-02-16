@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -12,10 +13,10 @@ import java.util.List;
 
 import uk.co.willanthony.quotationapp.Job;
 
-public class JobDatabase extends SQLiteOpenHelper {
+public class JobDatabaseHelper extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 2;
-    private static final String DATABASE_NAME = "JobDB5";
+    private static final String DATABASE_NAME = "JobDB7";
     private static final String TABLE_NAME = "JobTable";
 
     // columns name for database table
@@ -46,42 +47,46 @@ public class JobDatabase extends SQLiteOpenHelper {
     private static final int MACHINERY_INDEX = 10;
     private static final int MATERIALS_INDEX = 11;
 
+    // sql commands
+    private static final String CREATE_DB = "CREATE TABLE " + TABLE_NAME + " (" +
+            KEY_ID + " INTEGER PRIMARY KEY," +
+            KEY_QUOTE_NUMBER + " TEXT," +
+            KEY_TITLE + " TEXT," +
+            KEY_DESCRIPTION + " TEXT," +
+            KEY_COST_MINUS_VAT + " TEXT," +
+            KEY_COST_PLUS_VAT + " TEXT," +
+            KEY_WORKERS_BOOLEANS + " TEXT," +
+            KEY_HOURS_BOOLEANS + " TEXT," +
+            KEY_FREQUENCY_BOOLEANS + " TEXT," +
+            KEY_PERCENTAGE_BOOLEANS + " TEXT," +
+            KEY_MACHINERY_ADDED + " TEXT," +
+            KEY_MATERIALS_ADDED + " TEXT" + ")";
 
-    public JobDatabase(Context context) {
+    private static final String DROP_TABLE = "DROP TABLE IF EXISTS " + DATABASE_NAME;
+
+
+    public JobDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
-    public void onCreate(SQLiteDatabase database) {
-
-        String createDB = "CREATE TABLE " + TABLE_NAME + " (" +
-                KEY_ID + " INTEGER PRIMARY KEY," +
-                KEY_QUOTE_NUMBER + " TEXT," +
-                KEY_TITLE + " TEXT," +
-                KEY_DESCRIPTION + " TEXT," +
-                KEY_COST_MINUS_VAT + " TEXT," +
-                KEY_COST_PLUS_VAT + " TEXT," +
-                KEY_WORKERS_BOOLEANS + " TEXT," +
-                KEY_HOURS_BOOLEANS + " TEXT," +
-                KEY_FREQUENCY_BOOLEANS + " TEXT," +
-                KEY_PERCENTAGE_BOOLEANS + " TEXT," +
-                KEY_MACHINERY_ADDED + " TEXT," +
-                KEY_MATERIALS_ADDED + " TEXT" + ")";
-
-        database.execSQL(createDB);
+    public void onCreate(SQLiteDatabase db) {
+        SQLiteStatement createDB = db.compileStatement(CREATE_DB);
+        createDB.execute();
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion >= newVersion) {
             return;
         }
-        database.execSQL("DROP TABLE IF EXISTS " + DATABASE_NAME);
-        onCreate(database);
+        SQLiteStatement dropSTMT = db.compileStatement(DROP_TABLE);
+        dropSTMT.execute();
+        onCreate(db);
     }
 
     public long addJob(Job job) {
-        SQLiteDatabase database = this.getWritableDatabase();
+        SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(KEY_TITLE, job.getTitle());
         contentValues.put(KEY_QUOTE_NUMBER, job.getQuoteNumber());
@@ -94,17 +99,16 @@ public class JobDatabase extends SQLiteOpenHelper {
         contentValues.put(KEY_COST_PLUS_VAT, job.getPercentageSelectedString());
 
         // inserting data into db
-        long ID = database.insert(TABLE_NAME, null, contentValues);
-        Log.d("Insert to job database", "ID -> " + ID);
+        long ID = db.insert(TABLE_NAME, null, contentValues);
         return ID;
-
-        // quote needs a field variable - list of job ids
     }
 
     public Job getJob(long id) {
         SQLiteDatabase database = this.getWritableDatabase();
+
         String[] query = new String[]{KEY_ID, KEY_QUOTE_NUMBER, KEY_TITLE, KEY_DESCRIPTION, KEY_COST_MINUS_VAT, KEY_COST_PLUS_VAT, KEY_WORKERS_BOOLEANS,
         KEY_HOURS_BOOLEANS, KEY_FREQUENCY_BOOLEANS, KEY_PERCENTAGE_BOOLEANS,KEY_MACHINERY_ADDED, KEY_MATERIALS_ADDED};
+
         Cursor cursor = database.query(TABLE_NAME, query, KEY_ID + "=?", new String[]{String.valueOf(id)}, null, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
@@ -123,52 +127,20 @@ public class JobDatabase extends SQLiteOpenHelper {
                 cursor.getString(MACHINERY_INDEX),
                 cursor.getString(MATERIALS_INDEX));
         cursor.close();
+
         return job;
-    }
-
-    public void updateJobID(long ID) {
-        SQLiteDatabase database = getWritableDatabase();
-        String query = "UPDATE " + TABLE_NAME + " SET " + KEY_QUOTE_NUMBER +
-                "=" + ID + " WHERE " + KEY_QUOTE_NUMBER + "=" + Long.MAX_VALUE;
-        database.execSQL(query);
-    }
-
-
-
-    public List<Job> getAllJobs() {
-        List<Job> allJobs = new ArrayList<>();
-        String query = "SELECT * FROM " + TABLE_NAME + " ORDER BY " + KEY_ID + " DESC";
-        SQLiteDatabase database = this.getReadableDatabase();
-        Cursor cursor = database.rawQuery(query, null);
-        if (cursor.moveToFirst()) {
-            do {
-                Job job = new Job();
-                job.setID(Long.parseLong(cursor.getString(ID_INDEX)));
-                job.setQuoteNumber(Long.parseLong(cursor.getString(QUOTE_NUMBER_INDEX)));
-                job.setTitle(cursor.getString(TITLE_INDEX));
-                job.setDescription(cursor.getString(DESCRIPTION_INDEX));
-                job.setCostMinusVAT(cursor.getString(COST_MINUS_VAT_INDEX));
-                job.setCostPlusVAT(cursor.getString(COST_PLUS_VAT_INDEX));
-                job.setWorkersSelectedString(cursor.getString(WORKER_BOOLEAN_INDEX));
-                job.setHoursSelectedString(cursor.getString(HOURS_BOOLEAN_INDEX));
-                job.setFrequencySelectedString(cursor.getString(FREQUENCY_BOOLEAN_INDEX));
-                job.setPercentageSelectedString(cursor.getString(PERCENTAGE_BOOLEAN_INDEX));
-                job.setMachinerySelectedString(cursor.getString(MACHINERY_INDEX));
-                job.setMaterialsSelectedString(cursor.getString(MATERIALS_INDEX));
-                allJobs.add(job);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-
-        return allJobs;
     }
 
     public List<Job> getQuoteJobList(long quoteID) {
         List<Job> allJobs = new ArrayList<>();
-        String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + KEY_QUOTE_NUMBER + "=" + quoteID + " ORDER BY " + KEY_ID + " DESC";
-        SQLiteDatabase database = this.getReadableDatabase();
-        Cursor cursor = database.rawQuery(query, null);
-        if (cursor.moveToFirst()) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String[] query = new String[] {KEY_ID, KEY_QUOTE_NUMBER, KEY_TITLE, KEY_DESCRIPTION, KEY_COST_MINUS_VAT, KEY_COST_PLUS_VAT, KEY_WORKERS_BOOLEANS,
+                KEY_HOURS_BOOLEANS, KEY_FREQUENCY_BOOLEANS, KEY_PERCENTAGE_BOOLEANS,KEY_MACHINERY_ADDED, KEY_MATERIALS_ADDED};
+
+        Cursor cursor = db.query(TABLE_NAME,query,KEY_QUOTE_NUMBER + "=?",
+                new String[]{String.valueOf(quoteID)},null,null, KEY_QUOTE_NUMBER + " DESC", null);
+
+                if (cursor.moveToFirst()) {
             do {
                 Job job = new Job();
                 job.setID(Long.parseLong(cursor.getString(ID_INDEX)));

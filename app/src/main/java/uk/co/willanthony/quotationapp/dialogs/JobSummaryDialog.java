@@ -3,7 +3,6 @@ package uk.co.willanthony.quotationapp.dialogs;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -11,7 +10,7 @@ import android.widget.TextView;
 import uk.co.willanthony.quotationapp.Job;
 import uk.co.willanthony.quotationapp.R;
 import uk.co.willanthony.quotationapp.activities.AddJobActivity;
-import uk.co.willanthony.quotationapp.database.JobDatabase;
+import uk.co.willanthony.quotationapp.database.JobSQLiteCipherHelper;
 import uk.co.willanthony.quotationapp.util.DisplayCost;
 
 public class JobSummaryDialog {
@@ -48,8 +47,10 @@ public class JobSummaryDialog {
     }
 
     private Job getJobFromDatabase(long jobID) {
-        JobDatabase jobDatabase = new JobDatabase(context);
-        return jobDatabase.getJob(jobID);
+        JobSQLiteCipherHelper jobSQLiteCipherHelper = new JobSQLiteCipherHelper(context);
+        return jobSQLiteCipherHelper.getJob(jobID);
+//        JobDatabaseHelper jobDatabaseHelper = new JobDatabaseHelper(context);
+//        return jobDatabaseHelper.getJob(jobID);
     }
 
     private void setEditClickListener() {

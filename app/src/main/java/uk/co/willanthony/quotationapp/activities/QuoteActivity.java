@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -23,14 +24,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
-import uk.co.willanthony.quotationapp.util.DateTimeSetter;
-import uk.co.willanthony.quotationapp.util.DisplayCost;
 import uk.co.willanthony.quotationapp.Job;
 import uk.co.willanthony.quotationapp.Quote;
 import uk.co.willanthony.quotationapp.R;
-import uk.co.willanthony.quotationapp.database.JobDatabase;
-import uk.co.willanthony.quotationapp.database.QuoteDatabaseHelper;
+import uk.co.willanthony.quotationapp.database.JobSQLiteCipherHelper;
+import uk.co.willanthony.quotationapp.database.QuoteSQLiteCypherHelper;
 import uk.co.willanthony.quotationapp.recyclerview.QuoteRVAdapter;
+import uk.co.willanthony.quotationapp.util.DateTimeSetter;
+import uk.co.willanthony.quotationapp.util.DisplayCost;
 
 public class QuoteActivity extends AppCompatActivity {
 
@@ -84,23 +85,31 @@ public class QuoteActivity extends AppCompatActivity {
         long checkQuoteID = intent.getLongExtra("quoteID", -1);
         if (checkQuoteID == -1) {
             this.quoteID = saveQuoteToDataBase();
-            retrieveQuote(quoteID);
         } else {
             this.quoteID = checkQuoteID;
-            retrieveQuote(quoteID);
         }
+        retrieveQuote(quoteID);
     }
 
     private long saveQuoteToDataBase() {
         Quote quote = new Quote(quoteTitleTextView.getText().toString(), todaysDate, currentTime);
-        QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(this);
-        return quoteDatabaseHelper.addQuote(quote);
+
+        QuoteSQLiteCypherHelper quoteSQLiteCypherHelper = new QuoteSQLiteCypherHelper(this);
+        return quoteSQLiteCypherHelper.addQuote(quote);
+
+//        QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(this);
+//        return quoteDatabaseHelper.addQuote(quote);
     }
 
     private void retrieveQuote(long quoteID) {
-        QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(this);
-        this.quote = quoteDatabaseHelper.getQuote(quoteID);
-        quoteDatabaseHelper.close();
+
+        QuoteSQLiteCypherHelper quoteSQLiteCypherHelper = new QuoteSQLiteCypherHelper(this);
+        this.quote = quoteSQLiteCypherHelper.getQuote(quoteID);
+
+
+//        QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(this);
+//        this.quote = quoteDatabaseHelper.getQuote(quoteID);
+//        quoteDatabaseHelper.close();
     }
 
     private void setUpTitleText() {
@@ -143,8 +152,10 @@ public class QuoteActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Quote quote = new Quote(quoteID, quoteTitleTextView.getText().toString(), todaysDate, currentTime);
 
-                QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(QuoteActivity.this);
-                quoteDatabaseHelper.editQuote(quote);
+                QuoteSQLiteCypherHelper quoteSQLiteCypherHelper = new QuoteSQLiteCypherHelper(QuoteActivity.this);
+                quoteSQLiteCypherHelper.editQuote(quote);
+//                QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(QuoteActivity.this);
+//                quoteDatabaseHelper.editQuote(quote);
 
                 Intent intent = new Intent(QuoteActivity.this, AddJobActivity.class);
                 intent.putExtra("quoteID", quoteID);
@@ -154,12 +165,16 @@ public class QuoteActivity extends AppCompatActivity {
     }
 
     private void retrieveJobs() {
-        JobDatabase jobDatabase = new JobDatabase(this);
-        this.jobs = jobDatabase.getQuoteJobList(quoteID);
-        for (Job job : jobs) {
-            Toast.makeText(this, job.getCostMinusVAT() + " + " + job.getCostPlusVAT(), Toast.LENGTH_SHORT).show();
-        }
-        jobDatabase.close();
+
+        JobSQLiteCipherHelper jobSQLiteCipherHelper = new JobSQLiteCipherHelper(this);
+        this.jobs = jobSQLiteCipherHelper.getQuoteJobList(quoteID);
+        jobSQLiteCipherHelper.close();
+//        JobDatabaseHelper jobDatabaseHelper = new JobDatabaseHelper(this);
+//        this.jobs = jobDatabaseHelper.getQuoteJobList(quoteID);
+//        for (Job job : jobs) {
+//            Toast.makeText(this, job.getCostMinusVAT() + " + " + job.getCostPlusVAT(), Toast.LENGTH_SHORT).show();
+//        }
+//        jobDatabaseHelper.close();
     }
 
     private void setUpIDVIew() {
@@ -208,8 +223,10 @@ public class QuoteActivity extends AppCompatActivity {
 
             Quote quote = new Quote(quoteID, quoteTitleTextView.getText().toString(), todaysDate, currentTime);
 
-            QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(this);
-            quoteDatabaseHelper.editQuote(quote);
+            QuoteSQLiteCypherHelper quoteSQLiteCypherHelper = new QuoteSQLiteCypherHelper(this);
+            quoteSQLiteCypherHelper.editQuote(quote);
+//            QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(this);
+//            quoteDatabaseHelper.editQuote(quote);
             goToMain();
         }
         return super.onOptionsItemSelected(item);

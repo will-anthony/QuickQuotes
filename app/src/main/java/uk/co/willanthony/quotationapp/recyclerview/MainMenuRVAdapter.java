@@ -19,16 +19,15 @@ import uk.co.willanthony.quotationapp.R;
 import uk.co.willanthony.quotationapp.activities.MainActivity;
 import uk.co.willanthony.quotationapp.activities.QuoteActivity;
 import uk.co.willanthony.quotationapp.activities.QuotePDFActivity;
-import uk.co.willanthony.quotationapp.database.QuoteDatabaseHelper;
+import uk.co.willanthony.quotationapp.database.QuoteSQLiteCypherHelper;
 
 public class MainMenuRVAdapter extends RecyclerView.Adapter<MainMenuRVAdapter.QuoteItemViewHolder> implements DeletableAdapter {
 
-    private LayoutInflater inflater;
-    private List<Quote> quotes;
-    private Context context;
-    private Quote deletedQuote;
+    private final LayoutInflater inflater;
+    private final List<Quote> quotes;
+    private final Context context;
     private int deletedPosition;
-    private MainActivity mainActivity;
+    private final MainActivity mainActivity;
 
     public MainMenuRVAdapter(List<Quote> quotes, MainActivity mainActivity, Context context){
         this.context = context;
@@ -69,13 +68,16 @@ public class MainMenuRVAdapter extends RecyclerView.Adapter<MainMenuRVAdapter.Qu
 
     @Override
     public void delete(int position) {
-        this.deletedQuote = quotes.get(position);
+        Quote deletedQuote = quotes.get(position);
         deletedPosition = position;
         quotes.remove(position);
         mainActivity.shouldImageBeVisible();
         notifyItemRemoved(position);
-        QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(context);
-        quoteDatabaseHelper.deleteQuote(deletedQuote.getID());
+
+        QuoteSQLiteCypherHelper quoteSQLiteCypherHelper = new QuoteSQLiteCypherHelper(context);
+        quoteSQLiteCypherHelper.deleteQuote(deletedQuote.getID());
+//        QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(context);
+//        quoteDatabaseHelper.deleteQuote(deletedQuote.getID());
     }
 
     public class QuoteItemViewHolder extends RecyclerView.ViewHolder{

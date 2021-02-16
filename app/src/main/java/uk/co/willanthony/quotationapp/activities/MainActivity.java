@@ -1,7 +1,6 @@
 package uk.co.willanthony.quotationapp.activities;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,11 +18,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import net.sqlcipher.database.SQLiteDatabase;
+
 import java.util.List;
 
 import uk.co.willanthony.quotationapp.Quote;
-import uk.co.willanthony.quotationapp.database.QuoteDatabaseHelper;
 import uk.co.willanthony.quotationapp.R;
+import uk.co.willanthony.quotationapp.database.QuoteSQLiteCypherHelper;
 import uk.co.willanthony.quotationapp.recyclerview.MainMenuRVAdapter;
 import uk.co.willanthony.quotationapp.util.SwipeToDeleteCallback;
 
@@ -36,18 +37,17 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton fab;
     private ImageView paperImage;
     private TextView addQuoteText;
-    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        SQLiteDatabase.loadLibs(this);
         setUpToolbar();
         retrieveDBInfo();
         setUpRecyclerView();
         setUpFab();
         setUpBackgroundImages();
-//        setUpTutorial();
     }
 
     private void setUpToolbar() {
@@ -58,8 +58,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void retrieveDBInfo() {
-        QuoteDatabaseHelper database = new QuoteDatabaseHelper(this);
-        this.allQuotes = database.getAllQuotes();
+        QuoteSQLiteCypherHelper db = new QuoteSQLiteCypherHelper(this);
+        this.allQuotes = db.getAllQuotes();
+
+//        QuoteDatabaseHelper database = new QuoteDatabaseHelper(this);
+//        this.allQuotes = database.getAllQuotes();
     }
 
     private void setUpRecyclerView() {
@@ -87,28 +90,6 @@ public class MainActivity extends AppCompatActivity {
         this.paperImage = findViewById(R.id.paperStackImage);
         shouldImageBeVisible();
     }
-
-//    private void setUpTutorial() {
-////        sharedPreferences = getSharedPreferences("Tutorial", Context.MODE_PRIVATE);
-////        if(!sharedPreferences.getBoolean("haveShownPrompt", false)) {
-//            new MaterialTapTargetPrompt.Builder(MainActivity.this)
-//                    .setTarget(fab)
-//                    .setPrimaryText("Click Me!")
-//                    .setSecondaryText("create a new quotation")
-//                    .setBackButtonDismissEnabled(true)
-//                    .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
-//                        @Override
-//                        public void onPromptStateChanged(@NonNull MaterialTapTargetPrompt prompt, int state) {
-//                            if (state == MaterialTapTargetPrompt.STATE_FOCAL_PRESSED ||
-//                            state == MaterialTapTargetPrompt.STATE_NON_FOCAL_PRESSED) {
-////                                SharedPreferences.Editor editor = sharedPreferences.edit();
-////                                editor.putBoolean("haveShownPrompt", true);
-////                                editor.apply();
-//                            }
-//                        }
-//                    }).show();
-//        }
-
 
     public boolean shouldImageBeVisible() {
         if(recyclerView.getAdapter().getItemCount() <= 2) {

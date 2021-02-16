@@ -19,7 +19,7 @@ import java.util.List;
 
 import uk.co.willanthony.quotationapp.Job;
 import uk.co.willanthony.quotationapp.R;
-import uk.co.willanthony.quotationapp.database.JobDatabase;
+import uk.co.willanthony.quotationapp.database.JobSQLiteCipherHelper;
 import uk.co.willanthony.quotationapp.dialogs.ExtrasDialog;
 import uk.co.willanthony.quotationapp.recyclerview.ButtonItemData;
 import uk.co.willanthony.quotationapp.recyclerview.DeletableAdapter;
@@ -89,8 +89,11 @@ public class AddJobActivity extends AppCompatActivity implements NumericRVAdapte
                 getNumericRVBooleans(hoursRV), getNumericRVBooleans(frequencyRV), getNumericRVBooleans(percentageRV),
                 getExtrasString(machineryRV), getExtrasString(materialsRV));
 
-        JobDatabase jobDatabase = new JobDatabase(AddJobActivity.this);
-        return jobDatabase.addJob(job);
+        JobSQLiteCipherHelper jobSQLiteCipherHelper = new JobSQLiteCipherHelper(AddJobActivity.this);
+        return jobSQLiteCipherHelper.addJob(job);
+
+//        JobDatabaseHelper jobDatabaseHelper = new JobDatabaseHelper(AddJobActivity.this);
+//        return jobDatabaseHelper.addJob(job);
     }
 
     private String getNumericRVBooleans(RecyclerView recyclerView) {
@@ -104,11 +107,19 @@ public class AddJobActivity extends AppCompatActivity implements NumericRVAdapte
     }
 
     private void retrieveJob(long jobID) {
-        JobDatabase jobDatabase = new JobDatabase(this);
-        this.job = jobDatabase.getJob(jobID);
+
+        JobSQLiteCipherHelper jobSQLiteCipherHelper = new JobSQLiteCipherHelper(this);
+        this.job = jobSQLiteCipherHelper.getJob(jobID);
         this.quoteID = this.job.getQuoteNumber();
 
-        jobDatabase.close();
+        jobSQLiteCipherHelper.close();
+
+
+//        JobDatabaseHelper jobDatabaseHelper = new JobDatabaseHelper(this);
+//        this.job = jobDatabaseHelper.getJob(jobID);
+//        this.quoteID = this.job.getQuoteNumber();
+//
+//        jobDatabaseHelper.close();
     }
 
     private void setJobState() {
@@ -277,9 +288,14 @@ public class AddJobActivity extends AppCompatActivity implements NumericRVAdapte
                         getNumericRVBooleans(frequencyRV), getNumericRVBooleans(percentageRV),
                         getExtrasString(machineryRV), getExtrasString(materialsRV));
 
-                JobDatabase jobDatabase = new JobDatabase(AddJobActivity.this);
-                jobDatabase.editJob(job);
+                JobSQLiteCipherHelper jobSQLiteCipherHelper = new JobSQLiteCipherHelper(AddJobActivity.this);
+                jobSQLiteCipherHelper.editJob(job);
                 goToQuote();
+
+
+//                JobDatabaseHelper jobDatabaseHelper = new JobDatabaseHelper(AddJobActivity.this);
+//                jobDatabaseHelper.editJob(job);
+//                goToQuote();
             }
         });
     }

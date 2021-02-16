@@ -11,11 +11,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-import uk.co.willanthony.quotationapp.util.DisplayCost;
 import uk.co.willanthony.quotationapp.Job;
-import uk.co.willanthony.quotationapp.dialogs.JobSummaryDialog;
 import uk.co.willanthony.quotationapp.R;
-import uk.co.willanthony.quotationapp.database.QuoteDatabaseHelper;
+import uk.co.willanthony.quotationapp.database.QuoteSQLiteCypherHelper;
+import uk.co.willanthony.quotationapp.dialogs.JobSummaryDialog;
+import uk.co.willanthony.quotationapp.util.DisplayCost;
 
 public class QuoteRVAdapter extends RecyclerView.Adapter<QuoteRVAdapter.JobItemViewHolder> {
 
@@ -67,8 +67,10 @@ public class QuoteRVAdapter extends RecyclerView.Adapter<QuoteRVAdapter.JobItemV
         jobs.remove(position);
         notifyItemRemoved(position);
 
-        QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(context);
-        quoteDatabaseHelper.deleteQuote(deletedQuote.getID());
+        QuoteSQLiteCypherHelper quoteSQLiteCypherHelper = new QuoteSQLiteCypherHelper(context);
+        quoteSQLiteCypherHelper.deleteQuote(deletedQuote.getID());
+//        QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(context);
+//        quoteDatabaseHelper.deleteQuote(deletedQuote.getID());
     }
 
     public class JobItemViewHolder extends RecyclerView.ViewHolder {

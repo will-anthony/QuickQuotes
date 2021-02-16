@@ -2,22 +2,24 @@ package uk.co.willanthony.quotationapp.database;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
+
+import net.sqlcipher.Cursor;
+import net.sqlcipher.database.SQLiteDatabase;
+import net.sqlcipher.database.SQLiteOpenHelper;
+import net.sqlcipher.database.SQLiteStatement;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import uk.co.willanthony.quotationapp.Quote;
 
-public class QuoteDatabaseHelper extends SQLiteOpenHelper {
+public class QuoteSQLiteCypherHelper extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 2;
-    private static final String DATABASE_NAME = "QuoteDB7";
+    private static final String DATABASE_NAME = "QuoteDB8";
     private static final String TABLE_NAME = "QuoteTable";
+    private static final String PASSWORD = "!?PaSsWoRd?!";
 
     // columns name for database table
     private static final String KEY_ID = "id";
@@ -40,7 +42,7 @@ public class QuoteDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DROP_TABLE = "DROP TABLE IF EXISTS " + DATABASE_NAME;
 
-    public QuoteDatabaseHelper(Context context) {
+    public QuoteSQLiteCypherHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
@@ -61,28 +63,28 @@ public class QuoteDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public long addQuote(Quote quote) {
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = this.getWritableDatabase(PASSWORD);
         ContentValues contentValues = new ContentValues();
         contentValues.put(KEY_TITLE, quote.getTitle());
         contentValues.put(KEY_DATE, quote.getDate());
         contentValues.put(KEY_TIME, quote.getTime());
 
-        // inserting data into db
-        long ID = db.insert(TABLE_NAME, null, contentValues);
+        long ID = db.insert(TABLE_NAME,null,contentValues);
         return ID;
     }
 
-    public Quote getQuote(long id){
-        SQLiteDatabase db = this.getWritableDatabase();
+    public Quote getQuote(long id) {
 
+        // Open cipher-database using password, then return cursor pointing at the row with the id requested
+        SQLiteDatabase db = this.getReadableDatabase(PASSWORD);
         String[] query = new String[] {KEY_ID,KEY_TITLE,KEY_DATE,KEY_TIME};
-        Cursor cursor =  db.query(TABLE_NAME,query,KEY_ID + "=?",new String[]{String.valueOf(id)},null,null,null,null);
-        if(cursor != null)
+        Cursor cursor = db.query(TABLE_NAME,query,KEY_ID + "=?",new String[]{String.valueOf(id)},null,null,null,null);
+        if(cursor != null) {
             cursor.moveToFirst();
+        }
 
-        assert cursor != null;
-        Quote quote = new Quote(
-                Long.parseLong(cursor.getString(ID_INDEX)),
+        // Using cursor, return build Quote object and return it
+        Quote quote = new Quote(Long.parseLong(cursor.getString(ID_INDEX)),
                 cursor.getString(TITLE_INDEX),
                 cursor.getString(DATE_INDEX),
                 cursor.getString(TIME_INDEX));
@@ -92,12 +94,16 @@ public class QuoteDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public List<Quote> getAllQuotes() {
-        List<Quote> allQuotes = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
-        String[] query = new String[] {KEY_ID,KEY_TITLE,KEY_DATE,KEY_TIME};
 
+        // Open cipher-database using password, then return cursor with query to access all columns
+        List<Quote> allQuotes = new ArrayList<>();
+        SQLiteDatabase db = this.getWritableDatabase(PASSWORD);
+        String[] query = new String[] {KEY_ID,KEY_TITLE,KEY_DATE,KEY_TIME};
         Cursor cursor = db.query(TABLE_NAME,query,null,null,null,null,KEY_ID + " DESC",null);
+
         if (cursor.moveToFirst()) {
+
+            // Loop through all rows, creating all quotes using data retrieved and add to a list which is then returned
             do {
                 Quote quote = new Quote();
                 quote.setID(Long.parseLong(cursor.getString(ID_INDEX)));
@@ -112,20 +118,64 @@ public class QuoteDatabaseHelper extends SQLiteOpenHelper {
         return allQuotes;
     }
 
-
     public int editQuote(Quote quote) {
-        SQLiteDatabase database = this.getWritableDatabase();
+
+        // Open cipher-database using password, populate ContentValues and update columns
+        SQLiteDatabase db = this.getWritableDatabase(PASSWORD);
         ContentValues contentValues = new ContentValues();
-        Log.d("Edited", "Edited Title: -> " + quote.getTitle() + "\n ID -> " + quote.getID());
         contentValues.put(KEY_TITLE, quote.getTitle());
         contentValues.put(KEY_DATE, quote.getDate());
         contentValues.put(KEY_TIME, quote.getTime());
-        return database.update(TABLE_NAME, contentValues, KEY_ID + "=?", new String[]{String.valueOf(quote.getID())});
+
+        // returns number of rows edited
+        return db.update(TABLE_NAME, contentValues, KEY_ID + "=?", new String[]{String.valueOf(quote.getID())});
     }
 
     public void deleteQuote(long id) {
-        SQLiteDatabase database = this.getWritableDatabase();
-        database.delete(TABLE_NAME, KEY_ID + "=?", new String[]{String.valueOf(id)});
-        database.close();
+        SQLiteDatabase db = this.getWritableDatabase(PASSWORD);
+        db.delete(TABLE_NAME, KEY_ID + "=?", new String[]{String.valueOf(id)});
+        db.close();
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

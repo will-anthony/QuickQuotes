@@ -35,8 +35,8 @@ import uk.co.willanthony.quotationapp.BuildConfig;
 import uk.co.willanthony.quotationapp.Job;
 import uk.co.willanthony.quotationapp.Quote;
 import uk.co.willanthony.quotationapp.R;
-import uk.co.willanthony.quotationapp.database.JobDatabase;
-import uk.co.willanthony.quotationapp.database.QuoteDatabaseHelper;
+import uk.co.willanthony.quotationapp.database.JobSQLiteCipherHelper;
+import uk.co.willanthony.quotationapp.database.QuoteSQLiteCypherHelper;
 import uk.co.willanthony.quotationapp.recyclerview.JobPDFAdapter;
 import uk.co.willanthony.quotationapp.util.DisplayCost;
 
@@ -78,9 +78,13 @@ public class QuotePDFActivity extends AppCompatActivity {
         if (quoteID == -1) {
             Toast.makeText(this, "Quote not passed to quotePDF", Toast.LENGTH_LONG).show();
         }
-        QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(this);
-        this.quote = quoteDatabaseHelper.getQuote(quoteID);
-        quoteDatabaseHelper.close();
+
+        QuoteSQLiteCypherHelper quoteSQLiteCypherHelper = new QuoteSQLiteCypherHelper(this);
+        this.quote = quoteSQLiteCypherHelper.getQuote(quoteID);
+        quoteSQLiteCypherHelper.close();
+//        QuoteDatabaseHelper quoteDatabaseHelper = new QuoteDatabaseHelper(this);
+//        this.quote = quoteDatabaseHelper.getQuote(quoteID);
+//        quoteDatabaseHelper.close();
     }
 
     private void setDate() {
@@ -107,9 +111,14 @@ public class QuotePDFActivity extends AppCompatActivity {
     }
 
     private void retrieveJobs(long quoteID) {
-        JobDatabase jobDatabase = new JobDatabase(this);
-        this.jobs = jobDatabase.getQuoteJobList(quoteID);
-        jobDatabase.close();
+
+        JobSQLiteCipherHelper jobSQLiteCipherHelper = new JobSQLiteCipherHelper(this);
+        this.jobs = jobSQLiteCipherHelper.getQuoteJobList(quoteID);
+        jobSQLiteCipherHelper.close();
+//
+//        JobDatabaseHelper jobDatabaseHelper = new JobDatabaseHelper(this);
+//        this.jobs = jobDatabaseHelper.getQuoteJobList(quoteID);
+//        jobDatabaseHelper.close();
     }
 
     private void setTotalCost() {
@@ -199,7 +208,7 @@ public class QuotePDFActivity extends AppCompatActivity {
             int check = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
             if (check == PackageManager.PERMISSION_GRANTED) {
                 final boolean dirsCreated = Objects.requireNonNull(filePath.getParentFile()).mkdirs();
-                Toast.makeText(this, "Dirs created: " + dirsCreated, Toast.LENGTH_LONG).show();
+//                Toast.makeText(this, "Dirs created: " + dirsCreated, Toast.LENGTH_LONG).show();
 
                 pdf.writeTo(new FileOutputStream(filePath));
             }
